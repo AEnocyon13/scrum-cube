@@ -25,6 +25,16 @@
     return new THREE.ShapeGeometry(sh, 6);
   }
 
+  const ARROW_COLOR = 0xd81b72;
+  const TRAIL_COLOR = 0x1f6fff;
+  const AXES = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+  function disposeTree(obj) {
+    obj.traverse((o) => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) o.material.dispose();
+    });
+  }
+
   const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
   // ====================================================================
@@ -187,6 +197,79 @@
       }
     }
 
+    // ---- 回転方向の矢印 ----
+    // 回す層を囲む円弧の矢印。円弧は常にカメラ側を向くよう _tick で軸まわりに回す
+    setArrow(move) {
+      if (this.arrow && this.arrow.move === move) return;
+      if (this.arrow) {
+        this.scene.remove(this.arrow.outer);
+        disposeTree(this.arrow.outer);
+        this.arrow = null;
+      }
+      if (!move) return;
+      const axis = AXES[move.axis];
+      const u = AXES[(move.axis + 1) % 3];
+      const v = AXES[(move.axis + 2) % 3];
+      const sign = Math.sign(move.q);
+      // 外側の面を含む手は面の上に、中層・持ち替えはキューブを囲む輪として描く
+      const hasP = move.layers.includes(1), hasN = move.layers.includes(-1);
+      const faceSign = hasP && !hasN ? 1 : hasN && !hasP ? -1 : 0;
+      const span = Math.abs(move.q) === 2 ? Math.PI * (faceSign ? 1.15 : 0.95) : Math.PI * (faceSign ? 0.6 : 0.5);
+      const r = faceSign ? 1.05 : move.layers.length === 3 ? 2.6 : 2.3;
+      const pts = [];
+      for (let i = 0; i <= 32; i++) {
+        const a = sign * (-span / 2 + (span * i) / 32);
+        pts.push(u.clone().multiplyScalar(r * Math.cos(a)).add(v.clone().multiplyScalar(r * Math.sin(a))));
+      }
+      const mat = new THREE.MeshBasicMaterial({ color: ARROW_COLOR, depthTest: false, transparent: true, opacity: 0.95 });
+      const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.07, 8, false), mat);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.46, 16), mat);
+      cone.position.copy(pts[32]);
+      cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pts[32].clone().sub(pts[31]).normalize());
+      tube.renderOrder = cone.renderOrder = 10;
+      const inner = new THREE.Group();
+      inner.add(tube, cone);
+      const outer = new THREE.Group();
+      outer.add(inner);
+      const off = faceSign ? faceSign * 1.56 : move.layers.reduce((s, l) => s + l, 0) / move.layers.length;
+      outer.position.copy(axis.clone().multiplyScalar(off));
+      this.scene.add(outer);
+      this.arrow = { move, outer, inner, axis, u, v, faceSign, mat };
+    }
+
+    // ---- パーツの通り道 ----
+    // segments[i] は i 手目でパーツが通る点列（動かない手は空）。upto 手目までを濃く描く
+    setTrail(segments, upto) {
+      if (this.trail) {
+        this.scene.remove(this.trail);
+        disposeTree(this.trail);
+        this.trail = null;
+      }
+      if (!segments) return;
+      const g = new THREE.Group();
+      const done = new THREE.MeshBasicMaterial({ color: TRAIL_COLOR, depthTest: false, transparent: true, opacity: 0.95 });
+      const todo = new THREE.MeshBasicMaterial({ color: TRAIL_COLOR, depthTest: false, transparent: true, opacity: 0.28 });
+      const dot = new THREE.SphereGeometry(0.11, 12, 8);
+      segments.forEach((seg, i) => {
+        if (seg.length < 2) return;
+        const pts = seg.map((p) => new THREE.Vector3(...p));
+        const m = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.045, 6, false), i < upto ? done : todo);
+        const end = new THREE.Mesh(dot, i < upto ? done : todo);
+        end.position.copy(pts[pts.length - 1]);
+        m.renderOrder = end.renderOrder = 9;
+        g.add(m, end);
+      });
+      const first = segments.find((s) => s.length);
+      if (first) {
+        const start = new THREE.Mesh(new THREE.SphereGeometry(0.17, 16, 10), done);
+        start.position.set(...first[0]);
+        start.renderOrder = 9;
+        g.add(start);
+      }
+      this.trail = g;
+      this.scene.add(g);
+    }
+
     // ---- アニメーション ----
     animate(move, duration, done) {
       this.cancel();
@@ -219,6 +302,14 @@
       const { theta, phi, r } = this.view;
       this.camera.position.set(r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.cos(theta));
       this.camera.lookAt(0, 0, 0);
+      if (this.arrow) {
+        const c = this.camera.position;
+        const ang = Math.atan2(c.dot(this.arrow.v), c.dot(this.arrow.u));
+        this.arrow.inner.quaternion.setFromAxisAngle(this.arrow.axis, ang);
+        // 裏側の面の矢印は薄く表示
+        const hidden = this.arrow.faceSign && c.dot(this.arrow.axis) * this.arrow.faceSign < 0;
+        this.arrow.mat.opacity = hidden ? 0.35 : 0.95;
+      }
       this.renderer.render(this.scene, this.camera);
     }
   }
@@ -289,6 +380,7 @@
       this.loop = false;
       this.free = false;
       this.stickering = 'full';
+      this.showArrows = true;
       this.listeners = [];
       this._timer = null;
     }
@@ -297,6 +389,10 @@
       this.listeners.push(fn);
     }
     _emit() {
+      // 矢印: アニメーション中はその手、止まっているときは次の手
+      let arrow = null;
+      if (this.showArrows && !this.free) arrow = this.viewer.anim ? this.viewer.anim.move : this.moves[this.index] || null;
+      this.viewer.setArrow(arrow);
       for (const fn of this.listeners) fn(this);
     }
 
@@ -475,6 +571,8 @@
           </label>
           <div class="chip-row">
             <button class="chip filter" data-act="loop">${icon('repeat')}<span>ループ</span></button>
+            <button class="chip filter selected" data-act="arrow">${icon('redo')}<span>矢印</span></button>
+            <button class="chip filter" data-act="finger">${icon('pan_tool_alt')}<span>指使い</span></button>
             <button class="chip filter" data-act="pad">${icon('back_hand')}<span>自分で回す</span></button>
           </div>
         </div>
@@ -516,6 +614,15 @@
         player.loop = !player.loop;
         b.classList.toggle('selected', player.loop);
       }
+      if (act === 'arrow') {
+        player.showArrows = !player.showArrows;
+        b.classList.toggle('selected', player.showArrows);
+        player._emit();
+      }
+      if (act === 'finger') {
+        root.classList.toggle('show-fingers');
+        b.classList.toggle('selected', root.classList.contains('show-fingers'));
+      }
       if (act === 'pad') {
         const p = $('.player-pad');
         p.hidden = !p.hidden;
@@ -530,7 +637,7 @@
     $('[data-act="sticker"]').addEventListener('change', (e) => player.setStickering(e.target.value));
 
     document.addEventListener('keydown', (e) => {
-      if (e.target.closest('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+      if ((e.target.closest && e.target.closest('input, select, textarea')) || e.metaKey || e.ctrlKey || e.altKey) return;
       const padOpen = !$('.player-pad').hidden;
       if (padOpen && KEY_MAP[e.key.toLowerCase()]) {
         player.userMove(KEY_MAP[e.key.toLowerCase()] + (e.shiftKey ? "'" : ''));
@@ -542,6 +649,7 @@
       if (e.key === 'ArrowLeft') { player.prev(); e.preventDefault(); }
     });
 
+    const fingerNote = (m) => (global.Fingers && root.classList.contains('show-fingers') ? ' ／ ' + Fingers.of(m) : '');
     let lastMovesKey = null;
     player.on(() => {
       const movesKey = player.moves.map((m) => m.label).join(' ');
@@ -549,7 +657,8 @@
       if (movesKey !== lastMovesKey) {
         lastMovesKey = movesKey;
         wrap.innerHTML = player.moves
-          .map((m, i) => `<button class="move-token mono" role="listitem" data-act="jump" data-i="${i + 1}">${m.label}</button>`)
+          .map((m, i) => `<button class="move-token mono" role="listitem" data-act="jump" data-i="${i + 1}" title="${global.Fingers ? Fingers.of(m) : ''}">${m.label}${
+            global.Fingers ? `<small class="ft">${Fingers.short(m)}</small>` : ''}</button>`)
           .join('');
       }
       wrap.querySelectorAll('.move-token').forEach((t, i) => {
@@ -572,11 +681,11 @@
         nowDesc.textContent = '「手順の状態に戻す」で解説に戻れます';
       } else if (player.index === 0) {
         nowMove.textContent = '開始';
-        nowDesc.textContent = player.moves.length ? '次: ' + player.moves[0].label + ' — ' + C.describeMove(player.moves[0]) : '';
+        nowDesc.textContent = player.moves.length ? '次: ' + player.moves[0].label + ' — ' + C.describeMove(player.moves[0]) + fingerNote(player.moves[0]) : '';
       } else {
         const m = player.moves[player.index - 1];
         nowMove.textContent = `${player.index}/${player.moves.length}  ${m.label}`;
-        nowDesc.textContent = C.describeMove(m);
+        nowDesc.textContent = C.describeMove(m) + fingerNote(m);
       }
     });
 

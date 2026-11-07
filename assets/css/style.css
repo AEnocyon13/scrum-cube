@@ -52,8 +52,16 @@
   --elev-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
   --elev-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
 
+  /* 「いま回している1手」の色。3D の矢印・手順の現在位置で共通（M3 のカスタムカラー） */
+  --now: #d81b72;
+  --on-now: #ffffff;
+  --now-container: #ffd9e3;
+  --on-now-container: #5c0a2f;
+
   --font: 'Roboto', 'Noto Sans JP', system-ui, sans-serif;
-  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+  --font-display: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  --font-wordmark: 'Archivo', 'Roboto', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --ease-emph: cubic-bezier(0.2, 0, 0, 1);
   color-scheme: light;
 }
@@ -75,11 +83,13 @@ img, canvas { display: block; max-width: 100%; }
 .mono { font-family: var(--font-mono); }
 
 /* ---------- タイプスケール ---------- */
-.display-medium { font-size: 45px; line-height: 52px; font-weight: 400; letter-spacing: 0; }
-.display-small { font-size: 36px; line-height: 44px; font-weight: 400; }
-.headline-large { font-size: 32px; line-height: 40px; font-weight: 400; }
-.headline-medium { font-size: 28px; line-height: 36px; font-weight: 400; }
-.headline-small { font-size: 24px; line-height: 32px; font-weight: 400; }
+.display-medium, .display-small, .headline-large, .headline-medium, .headline-small { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.01em; }
+.display-medium { font-size: 48px; line-height: 60px; }
+.display-small { font-size: 36px; line-height: 46px; }
+.headline-large { font-size: 34px; line-height: 44px; }
+.headline-medium { font-size: 28px; line-height: 38px; }
+.headline-small { font-size: 24px; line-height: 32px; }
+.eyebrow { display: block; font: 500 12px/16px var(--font); letter-spacing: 0.12em; color: var(--md-primary); margin-bottom: 8px; }
 .title-large { font-size: 22px; line-height: 28px; font-weight: 400; }
 .title-medium { font-size: 16px; line-height: 24px; font-weight: 500; letter-spacing: 0.15px; }
 .title-small { font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: 0.1px; }
@@ -646,3 +656,194 @@ table.data tr.active td { background: var(--md-secondary-container); color: var(
 .notation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .notation-grid .list-item { min-height: 48px; }
 .footer { padding: 32px 0 48px; color: var(--md-on-surface-variant); font-size: 13px; border-top: 1px solid var(--md-outline-variant); margin-top: 24px; }
+
+/* 指使い表示 */
+.move-token .ft { display: none; font: 400 10px/12px var(--font); color: var(--md-on-surface-variant); margin-top: 1px; white-space: nowrap; }
+.show-fingers .move-token { height: auto; padding: 4px 8px; display: inline-flex; flex-direction: column; align-items: center; }
+.show-fingers .move-token .ft { display: block; }
+.show-fingers .move-token.current .ft, .show-fingers .move-token.done .ft { color: inherit; opacity: 0.85; }
+.show-fingers .player-moves { max-height: 152px; }
+
+/* ケース図・習得状況 */
+.case-svg { display: block; }
+.li-case { flex: 0 0 auto; width: 48px; height: 48px; display: grid; place-items: center; }
+.alg-group { padding: 16px 4px 4px; }
+.alg-group p { margin-top: 2px; }
+.status-icon { color: var(--md-on-surface-variant); }
+.status-icon.learned { color: var(--md-primary); font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.status-icon.learning { color: var(--md-tertiary); }
+.detail-head { display: flex; gap: 16px; align-items: flex-start; }
+.detail-case { flex: 0 0 auto; padding: 8px; border-radius: var(--shape-md); background: var(--md-surface-container-low); }
+.finger-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.finger-cell { display: flex; flex-direction: column; align-items: center; min-width: 52px; padding: 6px 8px; border-radius: var(--shape-sm); background: var(--md-surface-container-high); }
+.finger-cell .mono { font-size: 15px; font-weight: 500; }
+.finger-cell small { font-size: 11px; color: var(--md-on-surface-variant); white-space: nowrap; }
+
+/* 練習ページ */
+.player.compact .player-moves, .player.compact .player-progress, .player.compact .player-controls,
+.player.compact .player-options, .player.compact .player-now, .player.compact .player-top .player-title { display: none; }
+.player.compact { padding: 0; background: transparent; }
+.player.compact .player-stage { aspect-ratio: 1 / 0.8; min-height: 220px; }
+.player.compact .player-hint { display: none; }
+.player.compact .player-top { justify-content: flex-end; }
+.timer-pad {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 240px;
+  padding: 24px;
+  border-radius: var(--shape-xl);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  text-align: center;
+  user-select: none;
+  touch-action: none;
+  cursor: pointer;
+  transition: background 150ms linear;
+}
+.timer-pad .time { font-size: clamp(56px, 12vw, 104px); line-height: 1; font-weight: 500; letter-spacing: -1px; }
+.timer-pad[data-state='inspect'] { background: var(--md-tertiary-container); color: var(--md-on-tertiary-container); }
+.timer-pad[data-state='holding'] { background: var(--md-error-container); color: var(--md-on-error-container); }
+.timer-pad[data-state='ready'] { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+.timer-pad[data-state='running'] { background: var(--md-surface-container-lowest); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--shape-md); background: var(--md-surface-container-low); }
+.stat-val { font-size: 22px; font-weight: 500; }
+@media (max-width: 480px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.scr-cell { white-space: normal !important; min-width: 220px; }
+.progress-card .bar { display: flex; height: 8px; margin: 12px 0 6px; border-radius: var(--shape-full); background: var(--md-surface-container-lowest); overflow: hidden; }
+.bar-done { background: var(--md-primary); }
+.bar-learning { background: var(--md-tertiary); opacity: 0.7; }
+
+/* =====================================================================
+   仕上げ（ブランド・「いまの1手」・ヒーロー・ステッパー）
+   ===================================================================== */
+
+/* ワードマーク */
+.brand-word {
+  font-family: var(--font-wordmark);
+  font-weight: 800;
+  font-stretch: 112%;
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  color: var(--md-on-surface);
+}
+.brand-word span { margin-left: 0.32em; color: var(--md-primary); }
+.brand-mark { width: 30px; height: 30px; gap: 1.5px; padding: 3px; border-radius: 8px; transform: rotate(-8deg); }
+
+/* 「いまの1手」はサイト全体で同じ色 */
+.move-token.current { background: var(--now); color: var(--on-now); }
+.player-now-move { color: #ff8ab8; }
+.step-card.active { background: var(--now-container); color: var(--on-now-container); border-color: var(--now); }
+.step-card.active .step-move { background: var(--now); color: var(--on-now); }
+table.data .col-on { background: var(--now-container); color: var(--on-now-container); }
+
+/* 3D ステージ: キューブ用マットを思わせる淡いドット */
+.player-stage {
+  background:
+    radial-gradient(circle at 1px 1px, rgba(51, 105, 64, 0.13) 1px, transparent 1.4px) 0 0 / 18px 18px,
+    radial-gradient(120% 90% at 50% 35%, #ffffff 0%, var(--md-surface-container-high) 100%);
+}
+.player { background: var(--md-surface-container-low); border: 1px solid var(--md-outline-variant); }
+
+/* ---------- ヒーロー: 回転記号が 3D と連動する ---------- */
+.hero { padding: 40px 0 32px; gap: 48px; }
+.hero-title { margin-top: 4px; }
+.hero-notation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.42em;
+  margin: 28px 0 6px;
+  font: 600 clamp(48px, 7.4vw, 96px) / 1.05 var(--font-mono);
+  letter-spacing: -0.02em;
+}
+.hero-notation button {
+  position: relative;
+  padding: 0 0 10px;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--md-outline-variant);
+  cursor: pointer;
+  transition: color 180ms var(--ease-emph);
+}
+.hero-notation button::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  border-radius: var(--shape-full);
+  background: var(--now);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms var(--ease-emph);
+}
+.hero-notation button.done { color: var(--md-on-surface); }
+.hero-notation button.current { color: var(--now); }
+.hero-notation button.current::after { transform: scaleX(1); }
+.hero-caption { min-height: 26px; color: var(--md-on-surface-variant); font-size: 15px; }
+.hero-caption b { color: var(--md-on-surface); font-weight: 500; }
+.hero .hero-text > p.lead { margin-top: 20px; }
+.hero-name { font-family: var(--font-mono); font-size: 13px; color: var(--md-on-surface-variant); letter-spacing: 0.04em; }
+
+/* セクション見出し */
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.section-head p { color: var(--md-on-surface-variant); max-width: 620px; margin-top: 4px; }
+.section { padding: 48px 0; border-top: 1px solid var(--md-outline-variant); }
+.hero + .section { border-top: 0; }
+
+/* カードのアイコンは一色にそろえる */
+.card .card-icon { background: var(--md-primary-container) !important; color: var(--md-on-primary-container) !important; border-radius: 14px; }
+.grid-cards .card.elevated { background: var(--md-surface-container-lowest); box-shadow: none; border: 1px solid var(--md-outline-variant); transition: border-color 150ms, transform 200ms var(--ease-emph); }
+.grid-cards .card.elevated:hover { border-color: var(--md-primary); transform: translateY(-2px); }
+
+/* ロードマップ: 今の段階だけ「いまの1手」色 */
+.road-step.you .road-time { background: var(--now); color: var(--on-now); }
+.road-step.you .card { background: var(--now-container); color: var(--on-now-container); }
+.road-step.you .card a { color: var(--on-now-container); font-weight: 500; }
+.road-time { font-family: var(--font-mono); font-weight: 600; }
+
+/* ---------- ステップ（順番があるので番号つき） ---------- */
+.tabs.stepper { gap: 4px; border-bottom: 0; padding-bottom: 4px; }
+.tabs.stepper .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px 0 6px;
+  border-radius: var(--shape-full);
+}
+.tabs.stepper .tab.selected { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.tabs.stepper .tab.selected::before { display: none; }
+.step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--shape-full);
+  border: 1px solid var(--md-outline);
+  font: 600 13px var(--font-mono);
+}
+.tab.selected .step-num { background: var(--md-primary); color: var(--md-on-primary); border-color: transparent; }
+
+/* ページ見出し */
+.page-header { padding: 32px 0 16px; }
+
+/* 手順リストの記号を少し大きく */
+.list-item .li-sub.mono { font-size: 14px; letter-spacing: 0.02em; }
+.mono { font-feature-settings: 'zero' 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+.nowrap { white-space: nowrap; }
+.badge.now { background: var(--now); color: var(--on-now); }
+@media (max-width: 599px) {
+  .hero { padding-top: 16px; gap: 24px; }
+  .display-medium { font-size: 30px; line-height: 42px; }
+  .hero-notation { margin-top: 20px; }
+}

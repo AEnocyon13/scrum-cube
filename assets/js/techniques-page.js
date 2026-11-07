@@ -22,7 +22,7 @@
   const swatches = (h) =>
     C.homeStickers(h).map((s) => `<span class="swatch" style="background:${C.FACE_COLORS[s.face]}"></span>`).join('');
 
-  const sel = { id: TECH[0].id, from: 'solved', focus: [], picked: null };
+  const sel = { id: TECH[0].id, from: 'solved', focus: [], picked: null, trail: true };
   let moves = [];
   let start = null;
 
@@ -45,6 +45,7 @@
     ui.viewer.select(sel.picked ? nameToHome(sel.picked) : null);
     renderFocusChips();
     renderTracker();
+    renderTrail();
   }
 
   function renderChips() {
@@ -154,10 +155,19 @@
     }
   }
 
+  // 通り道: 選んだパーツ（未選択なら追跡リストの先頭）
+  function renderTrail() {
+    const name = sel.picked || sel.focus[0];
+    if (!sel.trail || !name || ui.player.free) return ui.viewer.setTrail(null);
+    ui.viewer.setTrail(C.pathSegments(start, moves, nameToHome(name)), ui.player.index);
+    $('#trail-name').textContent = name;
+  }
+
   function syncActive() {
     const idx = ui.player.free ? -1 : ui.player.index;
     document.querySelectorAll('#tech-steps .step-card').forEach((c, i) => c.classList.toggle('active', i === idx - 1));
     renderTracker();
+    renderTrail();
   }
   ui.player.on(syncActive);
 
@@ -176,6 +186,7 @@
       if (sel.picked === rm.dataset.remove) setPicked(rm.dataset.remove);
       renderFocusChips();
       renderTracker();
+      renderTrail();
       return;
     }
     const pk = e.target.closest('[data-pick]');
@@ -185,6 +196,13 @@
       sel.focus.push(add.dataset.add);
       renderFocusChips();
       renderTracker();
+      return;
+    }
+    const tr = e.target.closest('[data-trail]');
+    if (tr) {
+      sel.trail = !sel.trail;
+      tr.classList.toggle('selected', sel.trail);
+      renderTrail();
       return;
     }
     const j = e.target.closest('[data-jump]');

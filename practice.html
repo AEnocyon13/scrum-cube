@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>練習 — SCRUM CUBE</title>
+<meta name="description" content="スクランブル付きタイマー、Ao5/Ao12、手順の習得状況、フィンガートリックの基本。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,700;112,800&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="top-app-bar">
+  <a class="brand" href="index.html"><span class="brand-mark"><i style="background:#ffd500"></i><i style="background:#ffd500"></i><i style="background:#00a651"></i><i style="background:#ff6a00"></i><i style="background:#ffd500"></i><i style="background:#d1102a"></i><i style="background:#0b5cd5"></i><i style="background:#f4f4f4"></i><i style="background:#ffd500"></i></span><span class="brand-word">SCRUM<span>CUBE</span></span></a>
+  <nav class="nav-tabs" aria-label="メイン"><a class="nav-tab" href="index.html"><span class="material-symbols-rounded">home</span><span>ホーム</span></a><a class="nav-tab" href="methods.html"><span class="material-symbols-rounded">school</span><span>解法ガイド</span></a><a class="nav-tab" href="techniques.html"><span class="material-symbols-rounded">biotech</span><span>テクニック解剖</span></a><a class="nav-tab active" href="practice.html"><span class="material-symbols-rounded">timer</span><span>練習</span></a></nav>
+</header>
+<main class="container">
+  <section class="page-header">
+    <h1 class="headline-large">練習</h1>
+    <p class="body-large on-variant">スクランブルを崩して、タイムを計りましょう。記録と習得状況はこのブラウザに保存されます。</p>
+  </section>
+  <div class="split" style="margin-top:8px">
+    <div class="sticky stack">
+      <section class="card outlined">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <h2 class="title-medium">スクランブル</h2>
+          <button class="btn text" id="new-scramble"><span class="material-symbols-rounded">refresh</span>次のスクランブル</button>
+        </div>
+        <p class="mono title-large" id="scramble" style="margin:8px 0;word-spacing:4px"></p>
+        <p class="body-small on-variant">白を上・緑を前にして持ち、この順に回してください。下の3Dが崩した後の見本です。</p>
+        <div id="scramble-player" style="margin-top:12px"></div>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="timer-pad" id="timer" data-state="idle" tabindex="0" aria-label="タイマー">
+        <div class="time mono" id="time">0.00</div>
+        <p class="body-medium" id="timer-label"></p>
+      </section>
+      <div class="chip-row">
+        <button class="chip filter selected" id="opt-inspection"><span class="material-symbols-rounded">visibility</span><span>観察15秒（WCAルール）</span></button>
+      </div>
+      <div class="stats" id="stats"></div>
+      <section class="card outlined">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <h2 class="title-medium">記録</h2>
+          <button class="btn text" id="clear-all"><span class="material-symbols-rounded">delete_sweep</span>すべて削除</button>
+        </div>
+        <div class="table-wrap" style="max-height:360px;overflow-y:auto"><table class="data"><tbody id="solves"></tbody></table></div>
+        <p class="body-small on-variant" style="margin-top:8px">Ao5 は直近5回から最速と最遅を除いた3回の平均（WCA方式）。観察が15秒を超えると +2、17秒を超えると DNF。</p>
+      </section>
+      <section>
+        <h2 class="headline-small" style="margin-bottom:12px">習得状況</h2>
+        <p class="body-medium on-variant" style="margin-bottom:12px">解法ガイドで各手順に「練習中」「習得」を付けると、ここに反映されます。</p>
+        <div class="grid-cards" id="progress"></div>
+      </section>
+      <section class="card primary">
+        <h2 class="title-large" style="display:flex;gap:8px;align-items:center"><span class="material-symbols-rounded">pan_tool_alt</span>フィンガートリックの基本</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>持ち方</strong>：両手の親指を前面、人差し指を上面の後ろ側に軽く当て、残りの指は後面へ。握りしめず、指で「弾ける」余裕を残します。</li>
+            <li><strong>R / R'</strong> は手首で回す。腕ごと動かさず、手首を返すだけにすると速くなります。</li>
+            <li><strong>U</strong> は右人差し指、<strong>U'</strong> は左人差し指で弾く。セクシームーブ <code>R U R' U'</code> は「右手首・右人差し指・右手首・左人差し指」。</li>
+            <li><strong>持ち替え（リグリップ）を減らす</strong>：手順の途中で握り直さずに済む手順を選ぶのが、10秒台の大きなポイント。</li>
+            <li><strong>練習法</strong>：まず遅く正確に。次にメトロノームに合わせて一定のテンポで回すと、止まらずに回す力（ルックアヘッド）が付きます。</li>
+          </ul>
+          <p>3Dプレイヤーの「指使い」を押すと、手順の各手に指使いの一例が表示されます。</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<footer class="footer"><div class="container">SCRUM CUBE — ルービックキューブの仕組みを3Dで理解する学習サイト。配色: 黄色上・緑前。記号は WCA 表記。</div></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/js/cube-model.js"></script>
+<script src="assets/js/fingers.js"></script>
+<script src="assets/js/player.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/data-methods.js"></script>
+<script src="assets/js/progress.js"></script>
+<script src="assets/js/practice-page.js"></script>
+</body>
+</html>

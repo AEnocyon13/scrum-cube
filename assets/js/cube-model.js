@@ -295,6 +295,39 @@
     return steps;
   }
 
+  // 任意角度の回転（描画用の浮動小数点版）
+  function rotateFloat(v, axis, t) {
+    const [x, y, z] = v;
+    const c = Math.cos(t), s = Math.sin(t);
+    if (axis === 0) return [x, y * c - z * s, y * s + z * c];
+    if (axis === 1) return [x * c + z * s, y, -x * s + z * c];
+    return [x * c - y * s, x * s + y * c, z];
+  }
+
+  // パーツの通り道: 手ごとの点列（その手で動かないときは空配列）
+  function pathSegments(startState, moves, home, samples = 12) {
+    const segs = [];
+    let st = startState;
+    for (const mv of moves) {
+      const p = findPiece(st, home);
+      const seg = [];
+      if (mv.layers.includes(p.pos[mv.axis]) && p.pos.some((c, i) => i !== mv.axis && c !== 0)) {
+        for (let i = 0; i <= samples; i++) seg.push(rotateFloat(p.pos, mv.axis, (mv.q * Math.PI * i) / (2 * samples)));
+      }
+      segs.push(seg);
+      st = applyMove(st, mv);
+    }
+    return segs;
+  }
+
+  // 位置 pos・向き normal に見えているステッカー → { home, face }
+  function stickerMap(st) {
+    const m = new Map();
+    for (const p of st.pieces)
+      for (const s of homeStickers(p.home)) m.set(key(p.pos) + '|' + key(currentNormal(p, s.normal)), { home: p.home, face: s.face });
+    return m;
+  }
+
   // 手順中に一度でも動くパーツ
   function touchedPieces(startState, moves) {
     const set = new Set();
@@ -329,7 +362,7 @@
     parseAlg, invertMove, invertMoves, movesToString, makeMove,
     createSolved, cloneState, applyMove, applyMoves, normalize,
     pieceType, posName, homeStickers, currentNormal, faceOfNormal, findPiece, pieceAt,
-    cornerTwist, edgeFlipped, isOriIdentity, analyzeEffect, order, trace, touchedPieces,
+    cornerTwist, edgeFlipped, isOriIdentity, analyzeEffect, order, trace, touchedPieces, pathSegments, stickerMap,
     describeMove, key, eq,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
