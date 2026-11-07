@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テクニック解剖 — SCRUM CUBE</title>
+<meta name="description" content="セクシームーブ・逆セクシー・スーンなど、手順の中で各パーツがどう動くかを3Dで解剖。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="top-app-bar">
+  <a class="brand" href="index.html"><span class="brand-mark"><i style="background:#ffd500"></i><i style="background:#ffd500"></i><i style="background:#00a651"></i><i style="background:#ff6a00"></i><i style="background:#ffd500"></i><i style="background:#d1102a"></i><i style="background:#0b5cd5"></i><i style="background:#f4f4f4"></i><i style="background:#ffd500"></i></span><span class="title-large">SCRUM CUBE</span></a>
+  <nav class="nav-tabs" aria-label="メイン"><a class="nav-tab" href="index.html"><span class="material-symbols-rounded">home</span><span>ホーム</span></a><a class="nav-tab" href="methods.html"><span class="material-symbols-rounded">school</span><span>解法ガイド</span></a><a class="nav-tab active" href="techniques.html"><span class="material-symbols-rounded">biotech</span><span>テクニック解剖</span></a></nav>
+</header>
+<main class="container">
+  <section class="page-header">
+    <h1 class="headline-large">テクニック解剖</h1>
+    <p class="body-large on-variant">セクシームーブやスーンの中で、各パーツが1手ごとにどう動くのかを追いかけます。3Dのパーツをタップすると、そのパーツを追跡表に追加して強調表示できます。</p>
+  </section>
+  <div class="hscroll chip-row" id="tech-chips" style="flex-wrap:nowrap"></div>
+  <div class="split" style="margin-top:16px">
+    <div class="sticky">
+      <div id="player"></div>
+      <div class="card outlined" style="margin-top:12px">
+        <p class="label-large" style="margin-bottom:8px">スタート地点</p>
+        <div class="segmented">
+          <button class="seg selected" data-from="solved"><span class="material-symbols-rounded">check</span>揃った状態から</button>
+          <button class="seg" data-from="case">解ける状態から</button>
+        </div>
+        <p class="body-small on-variant" style="margin-top:8px">「揃った状態から」は手順が何を壊すか、「解ける状態から」はその手順で何が直るかを見られます。</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card elevated" id="tech-head"></div>
+      <section>
+        <h3 class="title-large" style="margin-bottom:12px">1手ずつの動き</h3>
+        <div id="tech-steps"></div>
+      </section>
+      <section class="card outlined">
+        <h3 class="title-large">パーツ追跡表</h3>
+        <p class="body-medium on-variant" style="margin:4px 0 12px">各パーツが何手目にどこにいるか。<span style="color:var(--md-error)">*</span> は向きがずれている状態。パーツ名をタップすると3Dで強調します。</p>
+        <div class="chip-row" id="focus-chips" style="margin-bottom:12px"></div>
+        <div class="table-wrap" id="tracker"></div>
+      </section>
+      <section class="card outlined">
+        <h3 class="title-large">正味の効果</h3>
+        <div id="tech-effect" style="margin-top:8px"></div>
+      </section>
+      <section class="card primary">
+        <h3 class="title-large" style="display:flex;gap:8px;align-items:center"><span class="material-symbols-rounded">lightbulb</span>理解のポイント</h3>
+        <div class="prose" id="tech-points"></div>
+      </section>
+    </div>
+  </div>
+</main>
+<footer class="footer"><div class="container">SCRUM CUBE — ルービックキューブの仕組みを3Dで理解する学習サイト。配色: 黄色上・緑前。記号は WCA 表記。</div></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/js/cube-model.js"></script>
+<script src="assets/js/player.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/data-techniques.js"></script>
+<script src="assets/js/techniques-page.js"></script>
+</body>
+</html>
